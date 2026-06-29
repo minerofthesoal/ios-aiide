@@ -113,16 +113,7 @@ enum InferenceEngineFactory {
 final actor GGUFInferenceEngine: InferenceEngine {
     
     nonisolated let engineType: InferenceEngineType = .gguf
-    nonisolated var statusDescription: String {
-        switch state {
-        case .idle: return "GGUF Engine: Idle"
-        case .loading(let p): return "GGUF Engine: Loading (\(Int(p * 100))%)"
-        case .ready: return "GGUF Engine: Ready"
-        case .generating: return "GGUF Engine: Generating..."
-        case .error(let msg): return "GGUF Engine: Error - \(msg)"
-        case .unloading: return "GGUF Engine: Unloading..."
-        }
-    }
+    nonisolated var statusDescription: String { "GGUF Engine" }
     
     private(set) var isLoaded: Bool = false
     private(set) var state: EngineState = .idle
@@ -136,7 +127,7 @@ final actor GGUFInferenceEngine: InferenceEngine {
     private var interruptFlag = false
     
     func load(model: AIModelDTO, parameters: InferenceParameters) async throws {
-        guard let modelPath = model.localPath else {
+        guard model.localPath != nil else {
             throw EngineError.modelPathNotSet
         }
         
@@ -185,7 +176,7 @@ final actor GGUFInferenceEngine: InferenceEngine {
         state = .generating
         interruptFlag = false
         
-        let params = options.merged(with: currentParameters ?? .default)
+        _ = options.merged(with: currentParameters ?? .default)
         
         return AsyncStream { continuation in
             Task {
@@ -259,16 +250,7 @@ final actor GGUFInferenceEngine: InferenceEngine {
 final actor MLXInferenceEngine: InferenceEngine {
     
     nonisolated let engineType: InferenceEngineType = .mlx
-    nonisolated var statusDescription: String {
-        switch state {
-        case .idle: return "MLX Engine: Idle"
-        case .loading(let p): return "MLX Engine: Loading (\(Int(p * 100))%)"
-        case .ready: return "MLX Engine: Ready"
-        case .generating: return "MLX Engine: Generating..."
-        case .error(let msg): return "MLX Engine: Error - \(msg)"
-        case .unloading: return "MLX Engine: Unloading..."
-        }
-    }
+    nonisolated var statusDescription: String { "MLX Engine" }
     
     private(set) var isLoaded: Bool = false
     private(set) var state: EngineState = .idle
@@ -279,7 +261,7 @@ final actor MLXInferenceEngine: InferenceEngine {
     private var modelContainer: MLXModelContainer?
     
     func load(model: AIModelDTO, parameters: InferenceParameters) async throws {
-        guard let modelPath = model.localPath else {
+        guard model.localPath != nil else {
             throw EngineError.modelPathNotSet
         }
         
@@ -369,23 +351,14 @@ final actor MLXInferenceEngine: InferenceEngine {
 final actor CoreMLInferenceEngine: InferenceEngine {
     
     nonisolated let engineType: InferenceEngineType = .coreml
-    nonisolated var statusDescription: String {
-        switch state {
-        case .idle: return "CoreML Engine: Idle"
-        case .loading(let p): return "CoreML Engine: Loading (\(Int(p * 100))%)"
-        case .ready: return "CoreML Engine: Ready"
-        case .generating: return "CoreML Engine: Generating..."
-        case .error(let msg): return "CoreML Engine: Error - \(msg)"
-        case .unloading: return "CoreML Engine: Unloading..."
-        }
-    }
+    nonisolated var statusDescription: String { "CoreML Engine" }
     
     private(set) var isLoaded: Bool = false
     private(set) var state: EngineState = .idle
     private var interruptFlag = false
     
     func load(model: AIModelDTO, parameters: InferenceParameters) async throws {
-        guard let modelPath = model.localPath else {
+        guard model.localPath != nil else {
             throw EngineError.modelPathNotSet
         }
         
@@ -469,16 +442,7 @@ final actor CoreMLInferenceEngine: InferenceEngine {
 final actor RemoteInferenceEngine: InferenceEngine {
     
     nonisolated let engineType: InferenceEngineType = .remote
-    nonisolated var statusDescription: String {
-        switch state {
-        case .idle: return "Remote Engine: Idle"
-        case .loading(let p): return "Remote Engine: Connecting (\(Int(p * 100))%)"
-        case .ready: return "Remote Engine: Connected"
-        case .generating: return "Remote Engine: Streaming..."
-        case .error(let msg): return "Remote Engine: Error - \(msg)"
-        case .unloading: return "Remote Engine: Disconnecting..."
-        }
-    }
+    nonisolated var statusDescription: String { "Remote Engine" }
     
     private(set) var isLoaded: Bool = false
     private(set) var state: EngineState = .idle
