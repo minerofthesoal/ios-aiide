@@ -97,7 +97,7 @@ actor RAGEngine {
         }
         
         // Chunk the document
-        let chunks = chunker.chunk(content: content, sourcePath: path)
+        let chunks = await chunker.chunk(content: content, sourcePath: path)
         
         // Generate embeddings for each chunk
         for chunk in chunks {
@@ -455,7 +455,7 @@ actor EmbeddingService {
     /// Generate deterministic pseudo-embeddings for placeholder
     private func generatePseudoEmbedding(for text: String, dimension: Int) -> [Float] {
         // Use a hash-based approach for consistent pseudo-embeddings
-        var seed = text.hashValue
+        let seed = text.hashValue
         var embedding = [Float](repeating: 0, count: dimension)
         
         var generator = SeededRandomNumberGenerator(seed: UInt64(bitPattern: Int64(seed)))

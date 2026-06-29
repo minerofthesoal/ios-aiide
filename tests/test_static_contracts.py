@@ -130,6 +130,7 @@ class RepositoryHygieneTests(unittest.TestCase):
         project = read("project.yml")
 
         self.assertIn("workflow_dispatch", workflow)
+        self.assertIn("release_tag", workflow)
         self.assertIn("tags:", workflow)
         self.assertIn("brew install xcodegen", workflow)
         self.assertIn("xcodegen generate --spec project.yml", workflow)
@@ -138,6 +139,7 @@ class RepositoryHygieneTests(unittest.TestCase):
         self.assertIn("OnDeviceAIIDE.ipa", workflow)
         self.assertIn("actions/upload-artifact", workflow)
         self.assertIn("softprops/action-gh-release", workflow)
+        self.assertIn("tag_name:", workflow)
 
         self.assertIn("type: application", project)
         self.assertIn("platform: iOS", project)
