@@ -39,11 +39,13 @@ struct ChatMessage: Identifiable, Codable, Sendable {
     
     /// System prompt for code assistance context
     static func systemPrompt(projectContext: String?) -> ChatMessage {
-        var content = """You are an expert programming assistant running in an on-device IDE. 
+        var content = """
+        You are an expert programming assistant running in an on-device IDE.
         You have access to the user's codebase through RAG retrieval.
         Provide concise, accurate code assistance.
         Always prefer showing code examples when applicable.
-        If referencing code, include the file path and line numbers."""
+        If referencing code, include the file path and line numbers.
+        """
         
         if let context = projectContext {
             content += "\n\nProject context: \(context)"
