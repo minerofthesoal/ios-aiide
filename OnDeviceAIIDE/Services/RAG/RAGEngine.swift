@@ -29,7 +29,9 @@ actor RAGEngine {
     /// Currently indexed project
     private(set) var indexedProject: Project?
     /// Number of chunks in the index
-    var chunkCount: Int { vectorDB.count }
+    var chunkCount: Int {
+        get async { await vectorDB.count }
+    }
     
     private init() {
         self.vectorDB = VectorDatabase()
@@ -52,7 +54,8 @@ actor RAGEngine {
         indexedProject = project
         isInitialized = true
         
-        logger.info("RAG engine ready with \(vectorDB.count) chunks")
+        let indexedChunkCount = await vectorDB.count
+        logger.info("RAG engine ready with \(indexedChunkCount) chunks")
     }
     
     /// Shutdown and clear resources
