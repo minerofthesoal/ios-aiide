@@ -65,7 +65,7 @@ struct FileBrowserPanel: View {
                 } else {
                     // Loading state
                     ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, minHeight: 200)
+                        .frame(maxWidth: .infinity, minHeight: 200, maxHeight: .infinity)
                         .foregroundColor(.appTextMuted)
                 }
             }

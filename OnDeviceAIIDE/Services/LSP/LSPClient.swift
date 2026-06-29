@@ -7,6 +7,7 @@
 import Foundation
 import os.log
 
+
 /// LSP Client for IDE language features
 actor LSPClient {
     
@@ -141,7 +142,7 @@ actor LSPClient {
             )
         )
         
-        let response = try await sendRequest(
+        _ = try await sendRequest(
             method: "initialize",
             params: initParams,
             language: language
@@ -150,7 +151,7 @@ actor LSPClient {
         logger.info("LSP server for \(language) initialized")
         
         // Send initialized notification
-        try await sendNotification(method: "initialized", params: [:], language: language)
+        try await sendNotification(method: "initialized", params: [String: Any](), language: language)
     }
     
     /// Stop a language server
@@ -225,7 +226,8 @@ actor LSPClient {
             language: language
         )
         
-        if let items = response.result?["items"] as? [[String: Any]] {
+        if let result = response.result as? [String: Any],
+           let items = result["items"] as? [[String: Any]] {
             return items.compactMap { CompletionItem(from: $0) }
         }
         if let items = response.result as? [[String: Any]] {
@@ -247,7 +249,7 @@ actor LSPClient {
             language: language
         )
         
-        guard let result = response.result else { return nil }
+        guard let result = response.result as? [String: Any] else { return nil }
         return Hover(from: result)
     }
     
@@ -299,29 +301,45 @@ actor LSPClient {
         params: T,
         language: String
     ) async throws -> LSPResponse {
+        try await sendRequest(method: method, encodedParams: try encodeToAny(params), language: language)
+    }
+
+    private func sendRequest(
+        method: String,
+        params: [String: Any],
+        language: String
+    ) async throws -> LSPResponse {
+        try await sendRequest(method: method, encodedParams: params, language: language)
+    }
+
+    private func sendRequest(
+        method: String,
+        encodedParams: Any,
+        language: String
+    ) async throws -> LSPResponse {
         guard let connection = connections[language] else {
             throw LSPError.serverNotRunning(language)
         }
-        
+
         messageID += 1
         let id = messageID
-        
+
         let request = JSONRPCRequest(
             jsonrpc: "2.0",
             id: id,
             method: method,
-            params: try encodeToAny(params)
+            params: encodedParams
         )
-        
+
         let data = try JSONSerialization.data(withJSONObject: request.dictionary, options: [.withoutEscapingSlashes])
         let header = "Content-Length: \(data.count)\r\n\r\n"
         let message = Data(header.utf8) + data
-        
+
         return try await withCheckedThrowingContinuation { continuation in
             pendingRequests[id] = continuation
-            
+
             connection.stdin.fileHandleForWriting.write(message)
-            
+
             // Timeout
             Task {
                 try? await Task.sleep(nanoseconds: 30_000_000_000) // 30s timeout
@@ -331,24 +349,40 @@ actor LSPClient {
             }
         }
     }
-    
+
     private func sendNotification<T: Encodable>(
         method: String,
         params: T,
         language: String
     ) async throws {
+        try await sendNotification(method: method, encodedParams: try encodeToAny(params), language: language)
+    }
+
+    private func sendNotification(
+        method: String,
+        params: [String: Any],
+        language: String
+    ) async throws {
+        try await sendNotification(method: method, encodedParams: params, language: language)
+    }
+
+    private func sendNotification(
+        method: String,
+        encodedParams: Any,
+        language: String
+    ) async throws {
         guard let connection = connections[language] else { return }
-        
+
         let notification: [String: Any] = [
             "jsonrpc": "2.0",
             "method": method,
-            "params": try encodeToAny(params)
+            "params": encodedParams
         ]
-        
+
         let data = try JSONSerialization.data(withJSONObject: notification, options: [.withoutEscapingSlashes])
         let header = "Content-Length: \(data.count)\r\n\r\n"
         let message = Data(header.utf8) + data
-        
+
         connection.stdin.fileHandleForWriting.write(message)
     }
     
@@ -383,7 +417,7 @@ actor LSPClient {
            let continuation = pendingRequests.removeValue(forKey: id) {
             let response = LSPResponse(
                 id: id,
-                result: json["result"] as? [String: Any],
+                result: json["result"],
                 error: json["error"] as? [String: Any]
             )
             continuation.resume(returning: response)
@@ -416,7 +450,7 @@ struct ServerConfig {
 
 struct LSPResponse {
     let id: Int?
-    let result: [String: Any]?
+    let result: Any?
     let error: [String: Any]?
 }
 

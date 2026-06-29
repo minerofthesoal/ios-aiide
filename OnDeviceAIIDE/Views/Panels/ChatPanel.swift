@@ -200,7 +200,7 @@ struct ChatPanel: View {
     }
     
     private func generateRAGResponse(for query: String) async throws -> String {
-        guard RAGEngine.shared.isInitialized else {
+        guard await RAGEngine.shared.isInitialized else {
             throw RagError.notInitialized
         }
         
@@ -288,21 +288,6 @@ struct TypingIndicator: View {
                 dotOffsets = [0, 0, 0]
             }
         }
-    }
-}
-
-// MARK: - Models
-
-struct ChatMessage: Identifiable, Sendable {
-    let id: UUID
-    let role: ChatRole
-    let content: String
-    let timestamp: Date
-    
-    enum ChatRole: String, Sendable {
-        case user
-        case assistant
-        case system
     }
 }
 

@@ -101,7 +101,7 @@ struct GitPanel: View {
             
             // Commit history
             List {
-                Section(header: SectionHeader("Commit History")) {
+                Section(header: SectionHeader(title: "Commit History")) {
                     ForEach(commits) { commit in
                         CommitRow(
                             commit: commit,

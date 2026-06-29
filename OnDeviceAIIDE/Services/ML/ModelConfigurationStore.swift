@@ -21,7 +21,6 @@ actor ModelConfigurationStore {
     
     private let logger = Logger(subsystem: "com.ondeviceaiide", category: "ModelConfigurationStore")
     private let persistence: CoreDataStack
-    private var _context: NSManagedObjectContext { persistence.viewContext }
     
     /// Published stream of model changes for UI observation
     nonisolated let modelChanges: AnyPublisher<ModelChangeEvent, Never>
@@ -429,9 +428,9 @@ actor ModelConfigurationStore {
     
     private func inferContextLength(from modelID: String, files: [HFFileEntry]) -> Int {
         // Check config.json for context window
-        if let configFile = files.first(where: { $0.path == "config.json" }) {
-            // Would need to download and parse config.json
-            // For now, use heuristics
+        if files.contains(where: { $0.path == "config.json" }) {
+            // Would need to download and parse config.json.
+            // For now, use heuristics.
         }
         
         // Heuristic based on model name
@@ -594,10 +593,10 @@ enum StoreError: Error, Sendable {
 // MARK: - Core Data Stack
 
 /// Thread-safe Core Data stack with background context support
-actor CoreDataStack {
+final class CoreDataStack {
     static let shared = CoreDataStack()
     
-    let persistentContainer: NSPersistentContainer
+    private let persistentContainer: NSPersistentContainer
     
     var viewContext: NSManagedObjectContext {
         persistentContainer.viewContext
